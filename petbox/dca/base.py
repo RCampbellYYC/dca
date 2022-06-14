@@ -336,20 +336,22 @@ class DeclineCurve(ABC):
             if not do_validate:
                 continue
             param = getattr(self, desc.name)
-            if param is not None and desc.lower_bound is not None:
-                if desc.exclude_lower_bound:
-                    if param <= desc.lower_bound:
-                        raise ValueError(f'{desc.name} <= {desc.lower_bound}')
-                else:
-                    if param < desc.lower_bound:
-                        raise ValueError(f'{desc.name} < {desc.lower_bound}')
+            if desc.exclude_lower_bound:
+                if (
+                    param is not None
+                    and desc.lower_bound is not None
+                    and param <= desc.lower_bound
+                ):
+                    raise ValueError(f'{desc.name} <= {desc.lower_bound}')
+            elif param < desc.lower_bound:
+                if param is not None and desc.lower_bound is not None:
+                    raise ValueError(f'{desc.name} < {desc.lower_bound}')
             if param is not None and desc.upper_bound is not None:
                 if desc.exclude_upper_bound:
                     if param >= desc.upper_bound:
                         raise ValueError(f'{desc.name} >= {desc.upper_bound}')
-                else:
-                    if param > desc.upper_bound:
-                        raise ValueError(f'{desc.name} > {desc.upper_bound}')
+                elif param > desc.upper_bound:
+                    raise ValueError(f'{desc.name} > {desc.upper_bound}')
         self._validate()
 
     @abstractmethod

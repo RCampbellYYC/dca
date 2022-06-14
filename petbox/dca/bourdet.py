@@ -65,11 +65,10 @@ def _get_L(y: NDFloat, x: NDFloat, L: float, i: int
     dx = x[i] - x[:i]
     dy = y[i] - y[:i]
     idx = np.where((dx <= L) & (dx >= 0.))[0]
-    if idx.size > 0:
-        idx = max(0, idx[0] - 1)
-        return dx[idx], dy[idx]
-    else:
+    if idx.size <= 0:
         return dx[-1], dy[-1]
+    idx = max(0, idx[0] - 1)
+    return dx[idx], dy[idx]
 
 
 def _get_R(y: NDFloat, x: NDFloat, L: float, i: int
@@ -185,7 +184,7 @@ def bourdet(y: NDFloat, x: NDFloat, L: float = 0.0,
     der = (y_L / x_L * x_R + y_R / x_R * x_L) / (x_L + x_R)
 
     # compute forward difference at left edge
-    for i in range(0, k1):
+    for i in range(k1):
         idx = _get_L_der(log_x, L, i)
         dy = y[idx] - y[i]
         dx = log_x[idx] - log_x[i]
