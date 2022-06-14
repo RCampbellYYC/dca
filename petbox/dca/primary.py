@@ -460,9 +460,6 @@ class THM(MultisegmentHyperbolic):
             raise ValueError('bi < bf')
         if self.bf < self.bterm and self.tterm != 0.0:
             raise ValueError('bf < bterm and tterm != 0')
-            # cheat to fix this
-            # object.__setattr__(self, 'bterm', self.bf)
-            pass
         if self.tterm != 0.0 and self.tterm * DAYS_PER_YEAR < self.telf:
             raise ValueError('tterm < telf')
         super()._validate()
@@ -508,18 +505,14 @@ class THM(MultisegmentHyperbolic):
                 dtype=np.float64
             )
 
-        elif tterm == 0.0 and bterm != 0.0:
+        else:
             # exponential terminal segment
             D2 = self._Dcheck(t1, q1, D1, b1, 0.0, t2).item()
             q2 = self._qcheck(t1, q1, D1, b1, 0.0, t2).item()
             D3 = self._Dcheck(t2, q2, D2, b2, 0.0, t3).item()
             D4 = self.nominal_from_tangent(bterm) / DAYS_PER_YEAR
             b4 = 0.0
-            if b3 <= 0:
-                t4 = t3
-            else:
-                t4 = max(t3, t3 + (1.0 / D4 - 1.0 / D3) / b3)
-
+            t4 = t3 if b3 <= 0 else max(t3, t3 + (1.0 / D4 - 1.0 / D3) / b3)
             if t4 == t3:
                 segments = np.array(
                     [
@@ -720,10 +713,7 @@ class THM(MultisegmentHyperbolic):
             if tterm > 0.0:
                 # hyperbolic
                 where_term = t > tterm
-                if np.count_nonzero(where_term) > 0:
-                    Dterm = D[where_term][-1].item()
-                else:
-                    Dterm = 0.0
+                Dterm = D[where_term][-1].item() if np.count_nonzero(where_term) > 0 else 0.0
             elif tterm == 0.0:
                 # exponential
                 Dterm = self.nominal_from_tangent(bterm) / DAYS_PER_YEAR
